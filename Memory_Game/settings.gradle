@@ -1,0 +1,2 @@
+include ':memorygame'
+include 'android', 'core'
