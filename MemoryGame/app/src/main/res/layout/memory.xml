@@ -5,4 +5,4 @@
     xmlns:tools="http://schemas.android.com/tools" android:id="@+id/watch_view_stub"
     android:layout_width="match_parent" android:layout_height="match_parent"
     app:rectLayout="@layout/rect_memory" app:roundLayout="@layout/round_memory"
-    tools:context=".Memory" tools:deviceIds="wear"></android.support.wearable.view.WatchViewStub>
+    tools:context=".Memory" tools:deviceIds="wear"/>
