@@ -1,49 +1,62 @@
 package com.happypantz.memorygame;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 public class Memory extends Game {
-	SpriteBatch batch;
-	Texture img;
+	Stage stage;
 
-	float r, g, b;
-	int flagR, flagG, flagB;
+	ImageButton[] img = new ImageButton[4];
+	Skin skin = new Skin();
 	
 	@Override
 	public void create () {
-		batch = new SpriteBatch();
-		r = 1;
-		g = 0.5f;
-		b = 0;
-		flagR = 1;
-		flagG = 1;
-		flagB = 1;
+		stage = new Stage();
+		skin = 	new Skin(Gdx.files.internal("skins/skin.json"),
+				new TextureAtlas(Gdx.files.internal("skins/memory.pack"))
+		);
+
+		float screenWidth = Gdx.graphics.getWidth();
+		float screenHeight = Gdx.graphics.getHeight();
+
+		img[0] = new ImageButton(skin, "bot_left");
+		img[1] = new ImageButton(skin, "bot_right");
+		img[2] = new ImageButton(skin, "top_left");
+		img[3] = new ImageButton(skin, "top_right");
+
+		for(int i = 0; i < img.length; i++) {
+			img[i].setSize(screenWidth / 2, screenHeight / 2);
+			//img[i].setPosition(((i % 2)*(screenWidth/2)), ((i / 2)*(screenHeight/2)));
+
+			stage.addActor(img[i]);
+		}
+
+		img[0].setPosition(0 , 0);
+		img[1].setPosition(screenWidth / 2, 0);
+		img[2].setPosition(0, screenHeight / 2);
+		img[3].setPosition(screenWidth / 2, screenHeight / 2);
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(r, g, b, 1);
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		if (r <= 0) flagR = 1;
-		else if (r >= 1) flagR = -1;
-		r += flagR * 0.01;
+		Gdx.input.setInputProcessor(stage);
 
-		if (g <= 0) flagG = 1;
-		else if (g >= 1) flagG = -1;
-		g += flagG * 0.01;
+	//	Drawable temp = img[2].getStyle().imageUp;
+	//	img[2].getStyle().imageUp = img[2].getStyle().imageDown;
 
-		if (b <= 0) flagB = 1;
-		else if (b >= 1) flagB = -1;
-		b += flagB * 0.01;
-
-		batch.begin();
-
-		batch.end();
+		stage.act();
+		stage.draw();
 	}
 }
