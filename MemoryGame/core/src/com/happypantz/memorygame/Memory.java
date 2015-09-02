@@ -10,12 +10,14 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -28,19 +30,21 @@ public class Memory extends Game {
 	Skin skin = new Skin();
 
 	Drawable[] drawables = new Drawable[8];
-	Drawable bot_right_up, bot_right_down;
-	Drawable top_left_up, top_left_down;
-	Drawable top_right_up, top_right_down;
+
+	float screenWidth, screenHeight;
 
 	Boolean computerTurn = false;
 	ArrayList<Integer> memSequence;
-	int index = -1;
-	int length = 2;
+	int index;
+	int length;
 	int playerChoice;
+	int compChoice;
 
-	long lightOn = 300;
-	long lightOff = 100;
+	long lightOn = 500;
+	long lightOff = 200;
 	long time = 0;
+	boolean light = false;
+
 	
 	@Override
 	public void create () {
@@ -51,42 +55,22 @@ public class Memory extends Game {
 				new TextureAtlas(Gdx.files.internal("skins/memory.pack"))
 		);
 
+		index = 0;
+		length = 2;
+
 		setDrawables();
 		memSequence = new ArrayList<Integer>();
 
-		float screenWidth = Gdx.graphics.getWidth();
-		float screenHeight = Gdx.graphics.getHeight();
+		screenWidth = Gdx.graphics.getWidth();
+		screenHeight = Gdx.graphics.getHeight();
 
 		img[0] = new ImageButton(skin, "bot_left");
 		img[1] = new ImageButton(skin, "bot_right");
 		img[2] = new ImageButton(skin, "top_left");
 		img[3] = new ImageButton(skin, "top_right");
 
-		for(int i = 0; i < img.length; i++) {
-			img[i].setSize(screenWidth / 2, screenHeight / 2);
-			img[i].setPosition((i % 2) * (screenWidth / 2), (float) Math.floor(i / 2) * (screenHeight / 2));
-			final int I = i;
-			img[i].addListener(new ClickListener() {
-				@Override
-				public void clicked(InputEvent event, float x, float y) {
-					playerChoice = I;
-					index++;
-				}
-			});
-			stage.addActor(img[i]);
-		}
-
-		overlay = new ImageButton(skin);
-		overlay.setSize(screenWidth, screenHeight);
-		overlay.setPosition(0, 0);
-		overlay.addListener(new ClickListener() {
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				overlay.setVisible(false);
-				computerTurn = true;
-			}
-		});
-		stage.addActor(overlay);
+		addButtons();
+		addOverlay();
 	}
 
 	@Override
@@ -94,16 +78,17 @@ public class Memory extends Game {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		// If player reaches end of round reset and increase sequence length
-		if (index == memSequence.size()) {
-			index = -1;
-			length ++;
-			computerTurn = true;
-			memSequence = new ArrayList<Integer>();
+		// Animate the computer's turn
+		if (computerTurn) {
+			animateComputerTurn();
 		}
 
-	//	Drawable temp = img[2].getStyle().imageUp;
-	//	img[2].getStyle().imageUp = img[2].getStyle().imageDown;
+		// If player reaches end of round reset and increase sequence length
+		if (!computerTurn) {
+			incrementRound();
+		}
+
+		System.out.println(index + " : " + length);
 
 		stage.act();
 		stage.draw();
@@ -118,5 +103,77 @@ public class Memory extends Game {
 		drawables[5] = skin.getDrawable("top_left_down");
 		drawables[6] = skin.getDrawable("top_right_up");
 		drawables[7] = skin.getDrawable("top_right_down");
+	}
+
+	private void addButtons() {
+		for(int i = 0; i < img.length; i++) {
+			img[i].setSize(screenWidth / 2, screenHeight / 2);
+			img[i].setPosition((i % 2) * (screenWidth / 2), (float) Math.floor(i / 2) * (screenHeight / 2));
+			final int I = i;
+			img[i].addListener(new ClickListener() {
+				@Override
+				public void clicked(InputEvent event, float x, float y) {
+					if (!computerTurn) {
+						playerChoice = I;
+						index++;
+					}
+				}
+			});
+			stage.addActor(img[i]);
+		}
+	}
+
+	private void addOverlay() {
+		overlay = new ImageButton(skin);
+		overlay.setSize(screenWidth, screenHeight);
+		overlay.setPosition(0, 0);
+		overlay.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				overlay.setVisible(false);
+				computerTurn = true;
+			}
+		});
+		stage.addActor(overlay);
+	}
+
+	private void animateComputerTurn() {
+		if (memSequence.size() < length) {
+			if (!light && TimeUtils.millis() > time + lightOff) {
+				time = TimeUtils.millis();
+				compChoice = new Random().nextInt(4);
+
+				img[compChoice].getStyle().imageUp = drawables[compChoice * 2 + 1];
+				light = true;
+			} else if (light && TimeUtils.millis() > time + lightOn) {
+				time = TimeUtils.millis();
+				memSequence.add(compChoice);
+
+				img[compChoice].getStyle().imageUp = drawables[compChoice * 2];
+				img[compChoice].getStyle().imageDown = drawables[compChoice * 2 + 1];
+				light = false;
+			}
+			for (int i=0; i < 4; i++) {
+				img[i].setTouchable(Touchable.disabled);
+			}
+		}
+		else if (memSequence.size() == length) {
+			computerTurn = false;
+			for (int i=0; i < 4; i++) {
+				img[i].setTouchable(Touchable.enabled);
+			}
+		}
+
+	}
+
+	private void incrementRound() {
+
+		if (index == length) {
+			index = 0;
+			length++;
+			computerTurn = true;
+			memSequence.clear();
+			memSequence = new ArrayList<Integer>();
+		}
 	}
 }
