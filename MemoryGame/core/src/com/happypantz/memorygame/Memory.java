@@ -14,9 +14,11 @@ import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public class Memory extends Game {
 
 	ImageButton[] img = new ImageButton[4];
 	ImageButton overlay;
+	Label roundDisplay;
 	Skin skin = new Skin();
 
 	Drawable[] drawables = new Drawable[8];
@@ -44,6 +47,7 @@ public class Memory extends Game {
 	long lightOff = 200;
 	long time = 0;
 	boolean light = false;
+	float fade = 0.2f;
 
 	
 	@Override
@@ -64,13 +68,9 @@ public class Memory extends Game {
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
 
-		img[0] = new ImageButton(skin, "bot_left");
-		img[1] = new ImageButton(skin, "bot_right");
-		img[2] = new ImageButton(skin, "top_left");
-		img[3] = new ImageButton(skin, "top_right");
-
 		addButtons();
 		addOverlay();
+		addRoundDisplay();
 	}
 
 	@Override
@@ -105,7 +105,22 @@ public class Memory extends Game {
 		drawables[7] = skin.getDrawable("top_right_down");
 	}
 
+	private void addRoundDisplay() {
+		roundDisplay = new Label("" + length + "", skin);
+		roundDisplay.setFontScale(screenHeight * 0.003f);
+		roundDisplay.setPosition(screenWidth/2 - roundDisplay.getWidth()/2 , screenHeight/2 - roundDisplay.getHeight() * 7/16);
+		roundDisplay.setAlignment(Align.center);
+		roundDisplay.setTouchable(Touchable.disabled);
+		roundDisplay.setVisible(false);
+		stage.addActor(roundDisplay);
+	}
+
 	private void addButtons() {
+		img[0] = new ImageButton(skin, "bot_left");
+		img[1] = new ImageButton(skin, "bot_right");
+		img[2] = new ImageButton(skin, "top_left");
+		img[3] = new ImageButton(skin, "top_right");
+
 		for(int i = 0; i < img.length; i++) {
 			img[i].setSize(screenWidth / 2, screenHeight / 2);
 			img[i].setPosition((i % 2) * (screenWidth / 2), (float) Math.floor(i / 2) * (screenHeight / 2));
@@ -115,7 +130,34 @@ public class Memory extends Game {
 				public void clicked(InputEvent event, float x, float y) {
 					if (!computerTurn) {
 						playerChoice = I;
-						index++;
+						if (playerChoice == memSequence.get(index)) { // correct choice: continue
+							index++;
+						}
+						else { // wrong choice: restart
+							index = 0;
+							length = 2;
+							memSequence.clear();
+							memSequence = new ArrayList<Integer>();
+
+							// Animate round label
+							roundDisplay.addAction(Actions.sequence(
+									Actions.fadeOut(fade),
+									Actions.run(new Runnable() {
+										@Override
+										public void run() {
+											roundDisplay.setText("" + length + "");
+										}
+									}),
+									Actions.fadeIn(fade),
+									Actions.run(new Runnable() {
+										@Override
+										public void run() {
+											computerTurn = true;
+										}
+									})
+							));
+
+						}
 					}
 				}
 			});
@@ -132,6 +174,11 @@ public class Memory extends Game {
 			public void clicked(InputEvent event, float x, float y) {
 				overlay.setVisible(false);
 				computerTurn = true;
+
+				// show round Label
+				roundDisplay.addAction(Actions.visible(true));
+				roundDisplay.addAction(Actions.fadeIn(fade));
+
 			}
 		});
 		stage.addActor(overlay);
@@ -171,9 +218,26 @@ public class Memory extends Game {
 		if (index == length) {
 			index = 0;
 			length++;
-			computerTurn = true;
 			memSequence.clear();
 			memSequence = new ArrayList<Integer>();
+
+			// Animate round label
+			roundDisplay.addAction(Actions.sequence(
+					Actions.fadeOut(fade),
+					Actions.run(new Runnable() {
+						@Override
+						public void run() {
+							roundDisplay.setText("" + length + "");
+						}
+					}),
+					Actions.fadeIn(fade),
+					Actions.run(new Runnable() {
+						@Override
+						public void run() {
+							computerTurn = true;
+						}
+					})
+			));
 		}
 	}
 }

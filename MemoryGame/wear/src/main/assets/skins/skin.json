@@ -1,4 +1,8 @@
 {
+  "com.badlogic.gdx.graphics.g2d.BitmapFont": {
+    "font": {"file": "fonts/freestyle.fnt"}
+  },
+
   "com.badlogic.gdx.graphics.Color": {
     "white": { "r": 1, "g": 1, "b": 1, "a": 1 },
     "black": { "r": 0, "g": 0, "b": 0, "a": 1 },
@@ -29,5 +33,9 @@
     "bot_right": { "up": "bot_right_up", "down": "bot_right_down" },
     "top_left": { "up": "top_left_up", "down": "top_left_down" },
     "top_right": { "up": "top_right_up", "down": "top_right_down" }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle": {
+    "default": { "font": font, "fontColor": black }
   }
 }
