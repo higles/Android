@@ -6,6 +6,7 @@
   "com.badlogic.gdx.graphics.Color": {
     "white": { "r": 1, "g": 1, "b": 1, "a": 1 },
     "black": { "r": 0, "g": 0, "b": 0, "a": 1 },
+    "red": { "r": 1, "g": 0, "b": 0, "a": 1 },
     "red_up": { "r": 0.7, "g": 0, "b": 0, "a": 1 },
     "red_down": { "r": 1, "g": 0, "b": 0, "a": 1 },
     "green_up": { "r": 0, "g": 0.7, "b": 0, "a": 1 },
@@ -24,7 +25,8 @@
     "top_left_up": { "name": "top_left_up_square", "color": green_up },
     "top_left_down": { "name": "top_left_down_square", "color": green_down },
     "top_right_up": { "name": "top_right_up_square", "color": red_up },
-    "top_right_down": { "name": "top_right_down_square", "color": red_down }
+    "top_right_down": { "name": "top_right_down_square", "color": red_down },
+    "error_indicator": { "name": "error", "color": red }
   },
 
   "com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle": {

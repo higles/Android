@@ -29,6 +29,7 @@ public class Memory extends Game {
 
 	ImageButton[] img = new ImageButton[4];
 	ImageButton overlay;
+	Image error;
 	Label roundDisplay;
 	Skin skin = new Skin();
 
@@ -68,9 +69,9 @@ public class Memory extends Game {
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
 
+		addRoundDisplay();
 		addButtons();
 		addOverlay();
-		addRoundDisplay();
 	}
 
 	@Override
@@ -113,6 +114,11 @@ public class Memory extends Game {
 		roundDisplay.setTouchable(Touchable.disabled);
 		roundDisplay.setVisible(false);
 		stage.addActor(roundDisplay);
+
+		error = new Image (skin.getDrawable("error_indicator"));
+		error.setSize(screenWidth, screenHeight);
+		error.setVisible(false);
+		stage.addActor(error);
 	}
 
 	private void addButtons() {
@@ -128,7 +134,7 @@ public class Memory extends Game {
 			img[i].addListener(new ClickListener() {
 				@Override
 				public void clicked(InputEvent event, float x, float y) {
-					if (!computerTurn) {
+					if (index < memSequence.size() && !computerTurn) {
 						playerChoice = I;
 						if (playerChoice == memSequence.get(index)) { // correct choice: continue
 							index++;
@@ -139,6 +145,13 @@ public class Memory extends Game {
 							memSequence.clear();
 							memSequence = new ArrayList<Integer>();
 
+							// Animate error display
+							error.addAction(Actions.sequence(
+									Actions.visible(true),
+									Actions.fadeIn(fade),
+									Actions.fadeOut(fade),
+									Actions.visible(false)
+							));
 							// Animate round label
 							roundDisplay.addAction(Actions.sequence(
 									Actions.fadeOut(fade),
