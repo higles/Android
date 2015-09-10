@@ -1,49 +1,256 @@
 package com.happypantz.memorygame;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.TimeUtils;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Memory extends Game {
-	SpriteBatch batch;
-	Texture img;
+	Stage stage;
 
-	float r, g, b;
-	int flagR, flagG, flagB;
+	ImageButton[] img = new ImageButton[4];
+	ImageButton overlay;
+	Image error;
+	Label roundDisplay;
+	Skin skin = new Skin();
+
+	Drawable[] drawables = new Drawable[8];
+
+	float screenWidth, screenHeight;
+
+	Boolean computerTurn = false;
+	ArrayList<Integer> memSequence;
+	int index;
+	int length;
+	int playerChoice;
+	int compChoice;
+
+	long lightOn = 500;
+	long lightOff = 200;
+	long time = 0;
+	boolean light = false;
+	float fade = 0.2f;
+
 	
 	@Override
 	public void create () {
-		batch = new SpriteBatch();
-		r = 1;
-		g = 0.5f;
-		b = 0;
-		flagR = 1;
-		flagG = 1;
-		flagB = 1;
+		stage = new Stage();
+		Gdx.input.setInputProcessor(stage);
+
+		skin = 	new Skin(Gdx.files.internal("skins/skin.json"),
+				new TextureAtlas(Gdx.files.internal("skins/memory.pack"))
+		);
+
+		index = 0;
+		length = 2;
+
+		setDrawables();
+		memSequence = new ArrayList<Integer>();
+
+		screenWidth = Gdx.graphics.getWidth();
+		screenHeight = Gdx.graphics.getHeight();
+
+		addRoundDisplay();
+		addButtons();
+		addOverlay();
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(r, g, b, 1);
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		if (r <= 0) flagR = 1;
-		else if (r >= 1) flagR = -1;
-		r += flagR * 0.01;
+		// Animate the computer's turn
+		if (computerTurn) {
+			animateComputerTurn();
+		}
 
-		if (g <= 0) flagG = 1;
-		else if (g >= 1) flagG = -1;
-		g += flagG * 0.01;
+		// If player reaches end of round reset and increase sequence length
+		if (!computerTurn) {
+			incrementRound();
+		}
 
-		if (b <= 0) flagB = 1;
-		else if (b >= 1) flagB = -1;
-		b += flagB * 0.01;
+		System.out.println(index + " : " + length);
 
-		batch.begin();
+		stage.act();
+		stage.draw();
+	}
 
-		batch.end();
+	private void setDrawables() {
+		drawables[0] = skin.getDrawable("bot_left_up");
+		drawables[1] = skin.getDrawable("bot_left_down");
+		drawables[2] = skin.getDrawable("bot_right_up");
+		drawables[3] = skin.getDrawable("bot_right_down");
+		drawables[4] = skin.getDrawable("top_left_up");
+		drawables[5] = skin.getDrawable("top_left_down");
+		drawables[6] = skin.getDrawable("top_right_up");
+		drawables[7] = skin.getDrawable("top_right_down");
+	}
+
+	private void addRoundDisplay() {
+		roundDisplay = new Label("" + length + "", skin);
+		roundDisplay.setFontScale(screenHeight * 0.003f);
+		roundDisplay.setPosition(screenWidth/2 - roundDisplay.getWidth()/2 , screenHeight/2 - roundDisplay.getHeight() * 7/16);
+		roundDisplay.setAlignment(Align.center);
+		roundDisplay.setTouchable(Touchable.disabled);
+		roundDisplay.setVisible(false);
+		stage.addActor(roundDisplay);
+
+		error = new Image (skin.getDrawable("error_indicator"));
+		error.setSize(screenWidth, screenHeight);
+		error.setVisible(false);
+		stage.addActor(error);
+	}
+
+	private void addButtons() {
+		img[0] = new ImageButton(skin, "bot_left");
+		img[1] = new ImageButton(skin, "bot_right");
+		img[2] = new ImageButton(skin, "top_left");
+		img[3] = new ImageButton(skin, "top_right");
+
+		for(int i = 0; i < img.length; i++) {
+			img[i].setSize(screenWidth / 2, screenHeight / 2);
+			img[i].setPosition((i % 2) * (screenWidth / 2), (float) Math.floor(i / 2) * (screenHeight / 2));
+			final int I = i;
+			img[i].addListener(new ClickListener() {
+				@Override
+				public void clicked(InputEvent event, float x, float y) {
+					if (index < memSequence.size() && !computerTurn) {
+						playerChoice = I;
+						if (playerChoice == memSequence.get(index)) { // correct choice: continue
+							index++;
+						}
+						else { // wrong choice: restart
+							index = 0;
+							length = 2;
+							memSequence.clear();
+							memSequence = new ArrayList<Integer>();
+
+							// Animate error display
+							error.addAction(Actions.sequence(
+									Actions.visible(true),
+									Actions.fadeIn(fade),
+									Actions.fadeOut(fade),
+									Actions.visible(false)
+							));
+							// Animate round label
+							roundDisplay.addAction(Actions.sequence(
+									Actions.fadeOut(fade),
+									Actions.run(new Runnable() {
+										@Override
+										public void run() {
+											roundDisplay.setText("" + length + "");
+										}
+									}),
+									Actions.fadeIn(fade),
+									Actions.run(new Runnable() {
+										@Override
+										public void run() {
+											computerTurn = true;
+										}
+									})
+							));
+
+						}
+					}
+				}
+			});
+			stage.addActor(img[i]);
+		}
+	}
+
+	private void addOverlay() {
+		overlay = new ImageButton(skin);
+		overlay.setSize(screenWidth, screenHeight);
+		overlay.setPosition(0, 0);
+		overlay.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				overlay.setVisible(false);
+				computerTurn = true;
+
+				// show round Label
+				roundDisplay.addAction(Actions.visible(true));
+				roundDisplay.addAction(Actions.fadeIn(fade));
+
+			}
+		});
+		stage.addActor(overlay);
+	}
+
+	private void animateComputerTurn() {
+		if (memSequence.size() < length) {
+			if (!light && TimeUtils.millis() > time + lightOff) {
+				time = TimeUtils.millis();
+				compChoice = new Random().nextInt(4);
+
+				img[compChoice].getStyle().imageUp = drawables[compChoice * 2 + 1];
+				light = true;
+			} else if (light && TimeUtils.millis() > time + lightOn) {
+				time = TimeUtils.millis();
+				memSequence.add(compChoice);
+
+				img[compChoice].getStyle().imageUp = drawables[compChoice * 2];
+				img[compChoice].getStyle().imageDown = drawables[compChoice * 2 + 1];
+				light = false;
+			}
+			for (int i=0; i < 4; i++) {
+				img[i].setTouchable(Touchable.disabled);
+			}
+		}
+		else if (memSequence.size() == length) {
+			computerTurn = false;
+			for (int i=0; i < 4; i++) {
+				img[i].setTouchable(Touchable.enabled);
+			}
+		}
+
+	}
+
+	private void incrementRound() {
+
+		if (index == length) {
+			index = 0;
+			length++;
+			memSequence.clear();
+			memSequence = new ArrayList<Integer>();
+
+			// Animate round label
+			roundDisplay.addAction(Actions.sequence(
+					Actions.fadeOut(fade),
+					Actions.run(new Runnable() {
+						@Override
+						public void run() {
+							roundDisplay.setText("" + length + "");
+						}
+					}),
+					Actions.fadeIn(fade),
+					Actions.run(new Runnable() {
+						@Override
+						public void run() {
+							computerTurn = true;
+						}
+					})
+			));
+		}
 	}
 }
