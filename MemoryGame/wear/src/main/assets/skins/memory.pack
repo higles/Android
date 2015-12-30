@@ -5,75 +5,42 @@ filter: Nearest,Nearest
 repeat: none
 error
   rotate: false
-  xy: 1, 261
+  xy: 0, 512
   size: 512, 512
   orig: 512, 512
   offset: 0, 0
   index: -1
-bot_left_down_square
-  rotate: false
-  xy: 1, 3
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-bot_left_up_square
-  rotate: false
-  xy: 515, 517
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-bot_right_down_square
-  rotate: false
-  xy: 259, 3
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-bot_right_up_square
-  rotate: false
-  xy: 517, 259
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-top_left_down_square
-  rotate: false
-  xy: 517, 1
-  size: 256, 256
-  orig: 256, 256
-  offset: 0, 0
-  index: -1
-
-memory2.png
-format: RGBA8888
-filter: Nearest,Nearest
-repeat: none
 overlay
   rotate: false
-  xy: 1, 259
+  xy: 0, 0
   size: 512, 512
   orig: 512, 512
   offset: 0, 0
   index: -1
-top_left_up_square
+bot_left
   rotate: false
-  xy: 1, 1
+  xy: 512, 768
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-top_right_down_square
+bot_right
   rotate: false
-  xy: 515, 515
+  xy: 768, 768
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
-top_right_up_square
+top_left
   rotate: false
-  xy: 259, 1
+  xy: 512, 512
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+top_right
+  rotate: false
+  xy: 768, 512
   size: 256, 256
   orig: 256, 256
   offset: 0, 0

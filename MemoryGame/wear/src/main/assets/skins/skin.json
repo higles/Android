@@ -8,24 +8,24 @@
     "black": { "r": 0, "g": 0, "b": 0, "a": 1 },
     "red": { "r": 1, "g": 0, "b": 0, "a": 1 },
     "red_up": { "r": 0.7, "g": 0, "b": 0, "a": 1 },
-    "red_down": { "r": 1, "g": 0, "b": 0, "a": 1 },
+    "red_down": { "r": 1, "g": 0.3, "b": 0, "a": 1 },
     "green_up": { "r": 0, "g": 0.7, "b": 0, "a": 1 },
     "green_down": { "r": 0, "g": 1, "b": 0, "a": 1 },
     "yellow_up": { "r": 0.7, "g": 0.7, "b": 0, "a": 1 },
     "yellow_down": { "r": 1, "g": 1, "b": 0, "a": 1 },
     "blue_up": { "r": 0, "g": 0, "b": 0.7, "a": 1 },
-    "blue_down": { "r": 0, "g": 0, "b": 1, "a": 1 }
+    "blue_down": { "r": 0, "g": 0.3, "b": 1, "a": 1 }
   },
 
   "com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable": {
-    "bot_left_up": { "name": "bot_left_up_square", "color": yellow_up },
-    "bot_left_down": { "name": "bot_left_down_square", "color": yellow_down },
-    "bot_right_up": { "name": "bot_right_up_square", "color": blue_up },
-    "bot_right_down": { "name": "bot_right_down_square", "color": blue_down },
-    "top_left_up": { "name": "top_left_up_square", "color": green_up },
-    "top_left_down": { "name": "top_left_down_square", "color": green_down },
-    "top_right_up": { "name": "top_right_up_square", "color": red_up },
-    "top_right_down": { "name": "top_right_down_square", "color": red_down },
+    "bot_left_up": { "name": "bot_left", "color": yellow_up },
+    "bot_left_down": { "name": "bot_left", "color": yellow_down },
+    "bot_right_up": { "name": "bot_right", "color": blue_up },
+    "bot_right_down": { "name": "bot_right", "color": blue_down },
+    "top_left_up": { "name": "top_left", "color": green_up },
+    "top_left_down": { "name": "top_left", "color": green_down },
+    "top_right_up": { "name": "top_right", "color": red_up },
+    "top_right_down": { "name": "top_right", "color": red_down },
     "error_indicator": { "name": "error", "color": red }
   },
 
